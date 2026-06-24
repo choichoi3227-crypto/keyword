@@ -1,0 +1,13 @@
+{
+  "name": "클라우드프레스",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd server && npm run dev",
+    "start": "cd server && npm start",
+    "install:all": "cd server && npm install",
+    "build:wasm": "cd wasm-src && wasm-pack build --target nodejs --out-dir ../server/wasm",
+    "deploy:worker": "cd worker && wrangler deploy",
+    "setup": "mkdir -p data && npm run install:all"
+  }
+}
