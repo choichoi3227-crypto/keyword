@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "KeyLens — 키워드 분석",
+  "version": "1.0.0",
+  "description": "구글·네이버 검색 결과 옆에서 바로 키워드 검색량·CPC·경쟁도를 분석합니다.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.google.com/*",
+    "https://search.naver.com/*"
+  ],
+  "background": {
+    "service_worker": "background/sw.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/search*", "https://search.naver.com/search.naver*"],
+      "js": ["content/inject.js"],
+      "css": ["content/inject.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/inject.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
