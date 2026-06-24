@@ -8,6 +8,11 @@
     "install:all": "cd server && npm install",
     "build:wasm": "cd wasm-src && wasm-pack build --target nodejs --out-dir ../server/wasm",
     "deploy:worker": "cd worker && wrangler deploy",
-    "setup": "mkdir -p data && npm run install:all"
+    "setup": "mkdir -p data && npm run install:all",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.104.0"
   }
 }
