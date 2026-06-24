@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeyLens — 키워드 분석 툴</title>
+  <meta name="description" content="구글·네이버 키워드 검색량, CPC, 경쟁도, 연관 검색어를 한 번에 분석하세요." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#2563EB', hover: '#1D4ED8', light: '#DBEAFE' },
+            surface: '#0F172A',
+            panel:   '#1E293B',
+            border:  '#334155',
+            muted:   '#94A3B8',
+            accent:  '#38BDF8',
+            success: '#22C55E',
+            warn:    '#F59E0B',
+            danger:  '#EF4444',
+          },
+          fontFamily: {
+            sans: ['"Pretendard"', '"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body class="h-full bg-surface text-slate-100 font-sans antialiased">
+
+  <!-- Nav -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+      <a href="/" class="flex items-center gap-2 font-bold text-lg tracking-tight">
+        <span class="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-white text-sm font-black">K</span>
+        KeyLens
+      </a>
+      <div class="hidden md:flex items-center gap-6 text-sm text-muted">
+        <a href="#" onclick="showPage('home')" class="hover:text-white transition-colors">분석</a>
+        <a href="#" onclick="showPage('trends')" class="hover:text-white transition-colors">실시간 트렌드</a>
+        <a href="#" onclick="showPage('pricing')" class="hover:text-white transition-colors">요금제</a>
+        <a href="#" onclick="showPage('history')" class="hover:text-white transition-colors">내 기록</a>
+      </div>
+      <div class="flex items-center gap-3" id="nav-auth">
+        <button onclick="showModal('login')" class="text-sm text-muted hover:text-white transition-colors">로그인</button>
+        <button onclick="showModal('register')" class="text-sm px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition-colors">무료 시작</button>
+      </div>
+      <div class="hidden items-center gap-3" id="nav-user">
+        <span class="text-sm text-muted" id="nav-plan-badge"></span>
+        <span class="text-sm text-white" id="nav-username"></span>
+        <button onclick="logout()" class="text-sm text-muted hover:text-white transition-colors">로그아웃</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="pt-14 min-h-screen">
+
+    <!-- ── HOME PAGE ── -->
+    <div id="page-home">
+      <!-- Hero -->
+      <section class="max-w-3xl mx-auto px-4 pt-16 pb-10 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-panel border border-border text-xs text-muted mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+          실시간 분석 가동 중
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-4">
+          키워드의 진짜 숫자를<br/>
+          <span class="text-accent">한 화면에</span>
+        </h1>
+        <p class="text-muted text-lg mb-10">구글·네이버 검색량, CPC, 경쟁도, 연관 검색어를 30가지 지표로 분석합니다.</p>
+
+        <!-- Search bar -->
+        <div class="relative max-w-2xl mx-auto" id="hero-search">
+          <div class="flex rounded-2xl bg-panel border border-border overflow-hidden focus-within:border-primary transition-colors shadow-lg shadow-black/30">
+            <!-- Portal selector -->
+            <div class="flex border-r border-border">
+              <button id="btn-portal-google" onclick="setPortal('google')" class="px-4 py-4 text-sm font-medium transition-colors text-white bg-primary/20">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                  구글
+                </span>
+              </button>
+              <button id="btn-portal-naver" onclick="setPortal('naver')" class="px-4 py-4 text-sm font-medium transition-colors text-muted hover:text-white">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#03C75A"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+                  네이버
+                </span>
+              </button>
+            </div>
+            <input
+              id="search-input"
+              type="text"
+              placeholder="키워드 입력 (예: 다이어트 식단)"
+              class="flex-1 bg-transparent px-5 py-4 text-base outline-none placeholder:text-slate-600"
+              autocomplete="off"
+              onkeydown="if(event.key==='Enter') runAnalysis()"
+              oninput="onSearchInput(this.value)"
+            />
+            <!-- Period -->
+            <select id="period-select" class="bg-transparent px-2 py-4 text-sm text-muted outline-none border-l border-border">
+              <option value="monthly">월간</option>
+              <option value="weekly">주간</option>
+              <option value="daily">일간</option>
+              <option value="yearly">연간</option>
+            </select>
+            <button onclick="runAnalysis()" class="px-6 bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors whitespace-nowrap">
+              분석하기
+            </button>
+          </div>
+
+          <!-- Autocomplete dropdown -->
+          <div id="autocomplete-list" class="absolute top-full left-0 right-0 mt-1 bg-panel border border-border rounded-xl shadow-xl z-40 hidden"></div>
+        </div>
+
+        <!-- Quick examples -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+          <span class="text-xs text-muted mr-1">예시:</span>
+          <button onclick="quickSearch('다이어트')" class="text-xs px-3 py-1 rounded-full bg-panel border border-border text-muted hover:text-white hover:border-primary transition-colors">다이어트</button>
+          <button onclick="quickSearch('ChatGPT')" class="text-xs px-3 py-1 rounded-full bg-panel border border-border text-muted hover:text-white hover:border-primary transition-colors">ChatGPT</button>
+          <button onclick="quickSearch('주식 투자')" class="text-xs px-3 py-1 rounded-full bg-panel border border-border text-muted hover:text-white hover:border-primary transition-colors">주식 투자</button>
+          <button onclick="quickSearch('맛집 추천')" class="text-xs px-3 py-1 rounded-full bg-panel border border-border text-muted hover:text-white hover:border-primary transition-colors">맛집 추천</button>
+        </div>
+      </section>
+
+      <!-- Results area -->
+      <div id="results-area" class="max-w-7xl mx-auto px-4 pb-20 hidden">
+        <!-- Loading state -->
+        <div id="results-loading" class="hidden text-center py-20">
+          <div class="inline-flex flex-col items-center gap-4">
+            <div class="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-muted text-sm">분석 중... 잠시만 기다려주세요</p>
+          </div>
+        </div>
+        <!-- Error state -->
+        <div id="results-error" class="hidden text-center py-16">
+          <p class="text-danger" id="error-msg"></p>
+          <button onclick="runAnalysis()" class="mt-4 text-sm text-primary hover:underline">다시 시도</button>
+        </div>
+        <!-- Results content -->
+        <div id="results-content" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- ── TRENDS PAGE ── -->
+    <div id="page-trends" class="hidden max-w-5xl mx-auto px-4 pt-10 pb-20">
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-1">실시간 인기 검색어</h2>
+        <p class="text-muted text-sm">10분마다 자동 갱신됩니다.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-panel rounded-2xl border border-border p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <h3 class="font-semibold">구글 트렌드</h3>
+          </div>
+          <div id="google-trends-list" class="space-y-2">
+            <div class="text-muted text-sm text-center py-8">불러오는 중...</div>
+          </div>
+        </div>
+        <div class="bg-panel rounded-2xl border border-border p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#03C75A"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+            <h3 class="font-semibold">네이버 트렌드</h3>
+          </div>
+          <div id="naver-trends-list" class="space-y-2">
+            <div class="text-muted text-sm text-center py-8">불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRICING PAGE ── -->
+    <div id="page-pricing" class="hidden max-w-6xl mx-auto px-4 pt-10 pb-20">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold mb-3">요금제</h2>
+        <p class="text-muted">모든 플랜은 월 단위 결제입니다. 언제든 취소 가능합니다.</p>
+      </div>
+      <div id="pricing-cards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+    </div>
+
+    <!-- ── HISTORY PAGE ── -->
+    <div id="page-history" class="hidden max-w-4xl mx-auto px-4 pt-10 pb-20">
+      <h2 class="text-2xl font-bold mb-6">분석 기록</h2>
+      <div id="history-list" class="space-y-2">
+        <div class="text-muted text-sm">로그인 후 이용 가능합니다.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── MODALS ── -->
+  <div id="modal-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="closeModal()">
+    <div onclick="event.stopPropagation()">
+      <!-- Login -->
+      <div id="modal-login" class="hidden bg-panel border border-border rounded-2xl w-full max-w-sm p-8">
+        <h3 class="text-xl font-bold mb-6">로그인</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-muted mb-1.5 block">이메일</label>
+            <input id="login-email" type="email" placeholder="you@example.com" class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors" />
+          </div>
+          <div>
+            <label class="text-xs text-muted mb-1.5 block">비밀번호</label>
+            <input id="login-pw" type="password" placeholder="••••••••" class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors" onkeydown="if(event.key==='Enter') doLogin()" />
+          </div>
+          <p id="login-error" class="text-danger text-xs hidden"></p>
+          <button onclick="doLogin()" class="w-full py-2.5 bg-primary hover:bg-primary-hover rounded-lg text-sm font-semibold text-white transition-colors">로그인</button>
+        </div>
+        <p class="text-center text-xs text-muted mt-4">계정이 없으신가요? <button onclick="showModal('register')" class="text-primary hover:underline">회원가입</button></p>
+      </div>
+
+      <!-- Register -->
+      <div id="modal-register" class="hidden bg-panel border border-border rounded-2xl w-full max-w-sm p-8">
+        <h3 class="text-xl font-bold mb-6">회원가입</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-muted mb-1.5 block">이름</label>
+            <input id="reg-name" type="text" placeholder="홍길동" class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors" />
+          </div>
+          <div>
+            <label class="text-xs text-muted mb-1.5 block">이메일</label>
+            <input id="reg-email" type="email" placeholder="you@example.com" class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors" />
+          </div>
+          <div>
+            <label class="text-xs text-muted mb-1.5 block">비밀번호 (8자 이상)</label>
+            <input id="reg-pw" type="password" placeholder="••••••••" class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors" onkeydown="if(event.key==='Enter') doRegister()" />
+          </div>
+          <p id="reg-error" class="text-danger text-xs hidden"></p>
+          <button onclick="doRegister()" class="w-full py-2.5 bg-primary hover:bg-primary-hover rounded-lg text-sm font-semibold text-white transition-colors">무료로 시작하기</button>
+        </div>
+        <p class="text-center text-xs text-muted mt-4">이미 계정이 있으신가요? <button onclick="showModal('login')" class="text-primary hover:underline">로그인</button></p>
+      </div>
+
+      <!-- Payment -->
+      <div id="modal-payment" class="hidden bg-panel border border-border rounded-2xl w-full max-w-sm p-8">
+        <h3 class="text-xl font-bold mb-2" id="payment-plan-title">플랜 업그레이드</h3>
+        <p class="text-muted text-sm mb-6" id="payment-plan-desc"></p>
+        <div id="paypal-button-container" class="min-h-[50px]"></div>
+        <p class="text-xs text-muted text-center mt-4">PayPal로 안전하게 결제됩니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayPal SDK (loaded dynamically) -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
