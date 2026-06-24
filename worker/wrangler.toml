@@ -1,0 +1,6 @@
+name = "keyword-proxy"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+WORKER_SECRET = "Swsh120327!"
